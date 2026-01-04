@@ -43,54 +43,48 @@ self.addEventListener('activate', (event) => {
       );
     })
   );
-  return self.clients.claim();
-});
+ self.addEventListener('fetch', (event) => {
+  const { request } = event;
 
-// Interception des requêtes
-self.addEventListener('fetch', (event) => {
-  // Ne pas mettre en cache les requêtes externes (CDN, etc.)
-  if (!event.request.url.includes('/LoreVault/')) {
-    return;
-  }
+  // Ne gérer que les requêtes GET
+  if (request.method !== 'GET') return;
+
+  // Ne pas intercepter les requêtes externes
+  if (!request.url.startsWith(self.location.origin)) return;
 
   event.respondWith(
-    caches.match(event.request)
-      .then((response) => {
-        // Retourner la ressource du cache si disponible
-        if (response) {
-          return response;
-        }
-        
-        // Sinon, faire la requête réseau
-        return fetch(event.request)
-          .then((response) => {
-            // Vérifier si la réponse est valide
-            if (!response || response.status !== 200 || response.type !== 'basic') {
-              return response;
-            }
+    caches.match(request).then((cachedResponse) => {
+      // 1️Si trouvé dans le cache → direct
+      if (cachedResponse) {
+        return cachedResponse;
+      }
 
-            // Cloner la réponse
-            const responseToCache = response.clone();
+      // 2️ Sinon → réseau
+      return fetch(request)
+        .then((networkResponse) => {
+          // Vérification réponse valide
+          if (
+            !networkResponse ||
+            networkResponse.status !== 200 ||
+            networkResponse.type !== 'basic'
+          ) {
+            return networkResponse;
+          }
 
-            // Mettre en cache la nouvelle ressource
-            caches.open(CACHE_NAME)
-              .then((cache) => {
-                cache.put(event.request, responseToCache);
-              });
-
-            return response;
-          })
-          .catch((error) => {
-            console.log('[Service Worker] Erreur de réseau:', error);
-            // Retourner une page d'erreur personnalisée si nécessaire
+          // Mise en cache dynamique
+          const responseClone = networkResponse.clone();
+          caches.open(CACHE_NAME).then((cache) => {
+            cache.put(request, responseClone);
           });
-      })
-  );
-});
 
-// Gestion des messages
-self.addEventListener('message', (event) => {
-  if (event.data && event.data.type === 'SKIP_WAITING') {
-    self.skipWaiting();
-  }
+          return networkResponse;
+        })
+        .catch(() => {
+          // 3️ OFFLINE FALLBACK
+          if (request.destination === 'document') {
+            return caches.match('/LoreVault/index.html');
+          }
+        });
+    })
+  );
 });

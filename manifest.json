@@ -1,0 +1,22 @@
+{
+  "name": "LoreVault Media Catalog",
+  "short_name": "LoreVault",
+  "description": "Mon catalogue personnel de médias",
+  "start_url": "index.html",
+  "display": "standalone",
+  "background_color": "#1a1a1a",
+  "theme_color": "#6666ff",
+  "icons": [
+    {
+      "src": "lorevault.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "lorevault.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}

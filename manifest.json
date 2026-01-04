@@ -1,54 +1,45 @@
 {
-  "name": "LoreVault - Catalogue Média Privé",
+  "name": "LoreVault",
   "short_name": "LoreVault",
-  "description": "Catalogue personnel de médias stocké localement. Aucune donnée envoyée sur Internet.",
-  "lang": "fr-FR",
-  "start_url": "/LoreVault/index.html",
-  "display": "standalone",
+  "description": "LoreVault est une application de prise de notes et de gestion de lore, pensée pour créer, organiser et sauvegarder des univers et idées, même hors ligne.",
+
+  "id": "com.badley08.lorevault.pwa",
+
+  "start_url": "/LoreVault/",
   "scope": "/LoreVault/",
-  "background_color": "#1a1a1a",
-  "theme_color": "#6666ff",
-  "orientation": "portrait-primary",
+
+  "display": "standalone",
+  "display_override": ["standalone"],
+
+  "background_color": "#0f172a",
+  "theme_color": "#0f172a",
+
+  "lang": "fr",
+  "dir": "ltr",
+
+  "categories": ["productivity", "education", "writing"],
+
   "icons": [
     {
-      "src": "lorevault.png",
+      "src": "/LoreVault/icons/icon-192.png",
       "sizes": "192x192",
-      "type": "image/png",
-      "purpose": "any maskable"
+      "type": "image/png"
     },
     {
-      "src": "lorevault.png",
-      "sizes": "500x500",
+      "src": "/LoreVault/icons/icon-512.png",
+      "sizes": "510x510",
       "type": "image/png",
       "purpose": "any maskable"
     }
   ],
-  "categories": ["productivity", "entertainment"],
-  "shortcuts": [
-    {
-      "name": "Ajouter un média",
-      "short_name": "Ajouter",
-      "description": "Ajouter un nouveau média à votre collection",
-      "url": "/LoreVault/index.html#add-media",
-      "icons": [
-        {
-          "src": "lorevault.png",
-          "sizes": "192x192"
-        }
-      ]
-    },
-    {
-      "name": "Voir les statistiques",
-      "short_name": "Stats",
-      "description": "Consulter vos statistiques et réalisations",
-      "url": "/LoreVault/index.html#stats",
-      "icons": [
-        {
-          "src": "lorevault.png",
-          "sizes": "192x192"
-        }
-      ]
-    }
-  ],
-  "prefer_related_applications": false
+
+  "iarc_rating_id": "e10+",
+
+  "launch_handler": {
+    "client_mode": "focus-existing"
+  },
+
+  "note_taking": {
+    "new_note_url": "/LoreVault/?action=new-note"
+  }
 }

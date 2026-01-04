@@ -3,273 +3,263 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LoreVault</title>
+    <meta name="description" content="LoreVault - Catalogue personnel de médias stocké localement. Aucune donnée envoyée sur Internet.">
+    <meta name="theme-color" content="#4F46E5">
+    <title>LoreVault - Catalogue Média Privé</title>
     
-    <meta name="theme-color" content="#6666ff">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-
+    <!-- PWA -->
     <link rel="manifest" href="manifest.json">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="style.css">
-    <link rel="apple-touch-icon" href="lorevault.png">
-</head>
-<body data-theme="dark">
-    <div class="overlay" id="overlay"></div>
+    <link rel="icon" href="lorevault.png" type="image/png">
     
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    
+    <!-- Custom Styles -->
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <!-- Header -->
     <header class="header">
-        <button class="hamburger" id="hamburger">
-            <i class="fas fa-bars"></i>
-        </button>
-        <div class="logo">
-            <i class="fas fa-archive"></i> LoreVault
-        </div>
-        <div class="search-bar">
-            <input type="text" class="search-input" id="searchInput" placeholder="Rechercher...">
-            <button class="voice-search" id="voiceSearch" title="Recherche vocale">
-                <i class="fas fa-microphone"></i>
-            </button>
-            <button class="focus-mode" id="focusMode" title="Mode Focus">
-                <i class="fas fa-eye"></i>
-            </button>
+        <div class="container">
+            <div class="header-content">
+                <div class="logo">
+                    <i class="fas fa-book-open"></i>
+                    <h1>LoreVault</h1>
+                </div>
+                <div class="header-actions">
+                    <button id="theme-toggle" class="btn-icon" title="Changer le thème">
+                        <i class="fas fa-palette"></i>
+                    </button>
+                    <button id="stats-toggle" class="btn-icon" title="Statistiques">
+                        <i class="fas fa-chart-bar"></i>
+                    </button>
+                </div>
+            </div>
         </div>
     </header>
 
-    <aside class="sidebar" id="sidebar">
-        <div class="sidebar-section">
-            <div class="sidebar-title">
-                <i class="fas fa-palette"></i> Thèmes
-            </div>
-            <div class="theme-grid">
-                <button class="theme-btn" data-theme="light">
-                    <i class="fas fa-sun"></i> Light
-                </button>
-                <button class="theme-btn active" data-theme="dark">
-                    <i class="fas fa-moon"></i> Dark
-                </button>
-                <button class="theme-btn" data-theme="neon">
-                    <i class="fas fa-bolt"></i> Neon
-                </button>
-                <button class="theme-btn" data-theme="monochrome">
-                    <i class="fas fa-adjust"></i> Mono
-                </button>
-                <button class="theme-btn" data-theme="royal">
-                    <i class="fas fa-crown"></i> Royal
-                </button>
-                <button class="theme-btn" data-theme="vintage">
-                    <i class="fas fa-clock"></i> Vintage
-                </button>
-                <button class="theme-btn" data-theme="glassmorphism">
-                    <i class="fas fa-gem"></i> Glass
-                </button>
-            </div>
-        </div>
-
-        <div class="sidebar-section">
-            <div class="sidebar-title">
-                <i class="fas fa-user"></i> Profil
-            </div>
-            <div class="input-group">
-                <input type="text" id="nickname" placeholder="Votre surnom">
-            </div>
-            <div class="input-group">
-                <input type="password" id="password" placeholder="Mot de passe">
-            </div>
-        </div>
-
-        <div class="sidebar-section">
-            <a href="https://ko-fi.com/karlito08" class="kofi-link" target="_blank">
-                <i class="fas fa-coffee"></i> Soutenir sur Ko-Fi
-            </a>
-        </div>
-
-        <div class="sidebar-section" style="position: relative;">
-            <div class="sidebar-title">
-                <i class="fas fa-cog"></i> Paramètres
-            </div>
-            <button class="theme-btn" id="settingsToggle" style="width: 100%;">
-                <i class="fas fa-wrench"></i> Options
-            </button>
-            <div class="settings-menu" id="settingsMenu">
-                <div class="settings-item" id="clearAllBtn">
-                    <i class="fas fa-trash"></i> Supprimer tout
-                </div>
-                <div class="settings-item" id="exportBtn">
-                    <i class="fas fa-download"></i> Exporter
-                </div>
-                <div class="settings-item" id="importBtn">
-                    <i class="fas fa-upload"></i> Importer
-                </div>
-                <div class="settings-item" id="addImageBtn">
-                    <i class="fas fa-image"></i> Ajouter image
-                </div>
-            </div>
-        </div>
-    </aside>
-
-    <main class="main" id="main">
-        <section class="stats-section" id="statsSection">
-            <div class="stat-card">
-                <div class="stat-number" id="totalItems">0</div>
-                <div class="stat-label">Total</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-number" id="watchedItems">0</div>
-                <div class="stat-label">Vus</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-number" id="toWatchItems">0</div>
-                <div class="stat-label">À voir</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-number" id="favoriteItems">0</div>
-                <div class="stat-label">Favoris</div>
-            </div>
-        </section>
-
-        <div class="categories-container">
-            <section class="categories">
-                <button class="category-btn active" data-category="all">
-                    <i class="fas fa-th"></i> Tout
-                </button>
-                <button class="category-btn" data-category="anime">
-                    <i class="fas fa-play-circle"></i> Anime
-                </button>
-                <button class="category-btn" data-category="manga">
-                    <i class="fas fa-book"></i> Manga
-                </button>
-                <button class="category-btn" data-category="webtoon">
-                    <i class="fas fa-mobile-alt"></i> Webtoon
-                </button>
-                <button class="category-btn" data-category="serie">
-                    <i class="fas fa-tv"></i> Série
-                </button>
-                <button class="category-btn" data-category="film">
-                    <i class="fas fa-film"></i> Film
-                </button>
-                <button class="category-btn" data-category="light-novel">
-                    <i class="fas fa-feather"></i> Light-Novel
-                </button>
-                <button class="category-btn" data-category="livre">
-                    <i class="fas fa-book-open"></i> Livre
-                </button>
-                <button class="category-btn" data-category="favorites">
-                    <i class="fas fa-heart"></i> Favoris
-                </button>
-            </section>
-        </div>
-
-        <section class="controls">
-            <div class="sort-controls">
-                <select class="sort-btn" id="sortSelect">
-                    <option value="date">Date d'ajout</option>
-                    <option value="title">Alphabétique</option>
-                    <option value="status">Statut</option>
-                    <option value="rating">Note</option>
-                </select>
-                <button class="sort-btn" id="sortOrder">
-                    <i class="fas fa-sort-amount-down"></i>
-                </button>
-            </div>
-            <button class="add-btn" id="addBtn">
-                <i class="fas fa-plus"></i> Ajouter
-            </button>
-        </section>
-
-        <section class="media-grid" id="mediaGrid"></section>
-
-        <div class="badges-section" id="badgesSection"></div>
-    </main>
-
-    <!-- Modal d'ajout/édition -->
-    <div class="modal" id="mediaModal">
+    <!-- Theme Selector Modal -->
+    <div id="theme-modal" class="modal hidden">
         <div class="modal-content">
             <div class="modal-header">
-                <h2 class="modal-title" id="modalTitle">Ajouter un média</h2>
-                <button class="close-btn" id="closeModal">
+                <h2><i class="fas fa-palette"></i> Choisir un thème</h2>
+                <button class="modal-close" onclick="closeThemeModal()">
                     <i class="fas fa-times"></i>
                 </button>
             </div>
-            <form id="mediaForm">
-                <input type="hidden" id="editId">
-                <div class="form-group">
-                    <label for="mediaTitle">Titre</label>
-                    <input type="text" id="mediaTitle" required>
+            <div class="theme-grid">
+                <button class="theme-card" data-theme="dark">
+                    <i class="fas fa-moon"></i>
+                    <span>Sombre</span>
+                </button>
+                <button class="theme-card" data-theme="light">
+                    <i class="fas fa-sun"></i>
+                    <span>Clair</span>
+                </button>
+                <button class="theme-card" data-theme="neon">
+                    <i class="fas fa-bolt"></i>
+                    <span>Néon</span>
+                </button>
+                <button class="theme-card" data-theme="monochrome">
+                    <i class="fas fa-circle-half-stroke"></i>
+                    <span>Monochrome</span>
+                </button>
+                <button class="theme-card" data-theme="royal">
+                    <i class="fas fa-crown"></i>
+                    <span>Royal</span>
+                </button>
+                <button class="theme-card" data-theme="vintage">
+                    <i class="fas fa-camera-retro"></i>
+                    <span>Vintage</span>
+                </button>
+                <button class="theme-card" data-theme="glassmorphism">
+                    <i class="fas fa-gem"></i>
+                    <span>Glassmorphism</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Stats Modal -->
+    <div id="stats-modal" class="modal hidden">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2><i class="fas fa-chart-bar"></i> Statistiques & Réalisations</h2>
+                <button class="modal-close" onclick="closeStatsModal()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="stats-content" id="stats-content">
+                <!-- Stats will be injected here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <div class="container">
+            <!-- Search & Filters -->
+            <div class="controls-section">
+                <div class="search-bar">
+                    <i class="fas fa-search"></i>
+                    <input type="text" id="search-input" placeholder="Rechercher un média...">
                 </div>
+                
+                <div class="filters">
+                    <select id="category-filter" class="filter-select">
+                        <option value="all">Toutes les catégories</option>
+                        <option value="Anime">Anime</option>
+                        <option value="Manga">Manga</option>
+                        <option value="Série">Série</option>
+                        <option value="Film">Film</option>
+                        <option value="Livre">Livre</option>
+                        <option value="Light Novel">Light Novel</option>
+                        <option value="Créateur de contenu">Créateur de contenu</option>
+                        <option value="Podcast">Podcast</option>
+                        <option value="BD/Comics">BD/Comics</option>
+                        <option value="Jeux vidéo">Jeux vidéo</option>
+                        <option value="Webtoon">Webtoon</option>
+                    </select>
+                    
+                    <select id="sort-filter" class="filter-select">
+                        <option value="date-desc">Plus récents</option>
+                        <option value="date-asc">Plus anciens</option>
+                        <option value="rating-desc">Meilleure note</option>
+                        <option value="rating-asc">Moins bonne note</option>
+                        <option value="title-asc">Titre (A-Z)</option>
+                        <option value="favorites">Favoris</option>
+                    </select>
+                    
+                    <button id="add-media-btn" class="btn-primary">
+                        <i class="fas fa-plus"></i> Ajouter un média
+                    </button>
+                </div>
+            </div>
+
+            <!-- Media Grid -->
+            <div id="media-grid" class="media-grid">
+                <!-- Media cards will be injected here -->
+            </div>
+            
+            <!-- Empty State -->
+            <div id="empty-state" class="empty-state hidden">
+                <i class="fas fa-inbox"></i>
+                <h3>Aucun média trouvé</h3>
+                <p>Commencez par ajouter votre premier média !</p>
+                <button class="btn-primary" onclick="openAddModal()">
+                    <i class="fas fa-plus"></i> Ajouter un média
+                </button>
+            </div>
+        </div>
+    </main>
+
+    <!-- Add/Edit Media Modal -->
+    <div id="media-modal" class="modal hidden">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="modal-title"><i class="fas fa-plus"></i> Ajouter un média</h2>
+                <button class="modal-close" onclick="closeMediaModal()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <form id="media-form" class="media-form">
+                <input type="hidden" id="media-id">
+                
                 <div class="form-group">
-                    <label for="mediaCategory">Catégorie</label>
-                    <select id="mediaCategory" required>
-                        <option value="anime">Anime</option>
-                        <option value="manga">Manga</option>
-                        <option value="webtoon">Webtoon</option>
-                        <option value="serie">Série</option>
-                        <option value="film">Film</option>
-                        <option value="light-novel">Light-Novel</option>
-                        <option value="livre">Livre</option>
+                    <label for="media-title">
+                        <i class="fas fa-heading"></i> Titre *
+                    </label>
+                    <input type="text" id="media-title" required placeholder="Ex: One Piece">
+                </div>
+                
+                <div class="form-group">
+                    <label for="media-category">
+                        <i class="fas fa-tag"></i> Catégorie *
+                    </label>
+                    <select id="media-category" required>
+                        <option value="">Sélectionner...</option>
+                        <option value="Anime">Anime</option>
+                        <option value="Manga">Manga</option>
+                        <option value="Série">Série</option>
+                        <option value="Film">Film</option>
+                        <option value="Livre">Livre</option>
+                        <option value="Light Novel">Light Novel</option>
+                        <option value="Créateur de contenu">Créateur de contenu</option>
+                        <option value="Podcast">Podcast</option>
+                        <option value="BD/Comics">BD/Comics</option>
+                        <option value="Jeux vidéo">Jeux vidéo</option>
+                        <option value="Webtoon">Webtoon</option>
                     </select>
                 </div>
+                
                 <div class="form-group">
-                    <label for="mediaStatus">Statut</label>
-                    <select id="mediaStatus">
-                        <option value="Déjà regardé">Déjà regardé</option>
-                        <option value="Pas encore">Pas encore</option>
-                        <option value="À regarder">À regarder</option>
-                        <option value="En cours">En Cours</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label for="mediaRating">Note (1-5)</label>
-                    <div class="rating-stars" id="ratingStars">
-                        <i class="fas fa-star star" data-rating="1"></i>
-                        <i class="fas fa-star star" data-rating="2"></i>
-                        <i class="fas fa-star star" data-rating="3"></i>
-                        <i class="fas fa-star star" data-rating="4"></i>
-                        <i class="fas fa-star star" data-rating="5"></i>
+                    <label for="media-rating">
+                        <i class="fas fa-star"></i> Note (/10)
+                    </label>
+                    <div class="rating-input">
+                        <input type="number" id="media-rating" min="0" max="10" step="0.1" value="5">
+                        <span id="rating-display">5.0</span>
                     </div>
-                    <input type="hidden" id="mediaRating" value="0">
                 </div>
+                
                 <div class="form-group">
-                    <label for="mediaImage">Image</label>
-                    <input type="file" id="mediaImage" accept="image/*">
+                    <label for="media-image">
+                        <i class="fas fa-image"></i> URL de l'image
+                    </label>
+                    <input type="url" id="media-image" placeholder="https://exemple.com/image.jpg">
                 </div>
+                
                 <div class="form-group">
-                    <label for="mediaNotes">Notes</label>
-                    <textarea id="mediaNotes" rows="3" placeholder="Vos notes sur ce média..."></textarea>
+                    <label for="media-notes">
+                        <i class="fas fa-comment"></i> Notes personnelles
+                    </label>
+                    <textarea id="media-notes" rows="3" placeholder="Vos impressions, commentaires..."></textarea>
                 </div>
-                <div class="form-group">
-                    <label for="reminderDate">Rappel</label>
-                    <input type="datetime-local" id="reminderDate">
+                
+                <div class="form-group checkbox-group">
+                    <label>
+                        <input type="checkbox" id="media-favorite">
+                        <i class="fas fa-heart"></i> Marquer comme favori
+                    </label>
                 </div>
+                
                 <div class="form-actions">
-                    <button type="button" class="btn-secondary" id="cancelBtn">Annuler</button>
-                    <button type="submit" class="btn-primary">Sauvegarder</button>
+                    <button type="button" class="btn-secondary" onclick="closeMediaModal()">
+                        <i class="fas fa-times"></i> Annuler
+                    </button>
+                    <button type="submit" class="btn-primary">
+                        <i class="fas fa-save"></i> Enregistrer
+                    </button>
                 </div>
             </form>
         </div>
     </div>
 
-    <!-- Modal de confirmation -->
-    <div class="modal" id="confirmModal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h2 class="modal-title">Confirmation</h2>
-                <button class="close-btn" id="closeConfirm">
-                    <i class="fas fa-times"></i>
-                </button>
-            </div>
-            <div id="confirmMessage"></div>
-            <div class="form-actions">
-                <button class="btn-secondary" id="confirmCancel">Annuler</button>
-                <button class="btn-primary" id="confirmOk">Confirmer</button>
-            </div>
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <p>
+                <i class="fas fa-lock"></i> 
+                LoreVault - Toutes vos données sont stockées localement dans votre navigateur.
+                <a href="#" onclick="showPrivacyInfo(event)">En savoir plus</a>
+            </p>
         </div>
-    </div>
+    </footer>
 
-    <input type="file" id="importFile" accept=".json" style="display: none;">
-    <input type="file" id="imageFile" accept="image/*" style="display: none;">
-
-    <script src="script.js"></script>
+    <!-- Scripts -->
     <script src="records.js"></script>
     <script src="app.js"></script>
+    <script src="script.js"></script>
+    <script>
+        // Register Service Worker
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('sw.js')
+                .then(reg => console.log('Service Worker enregistré', reg))
+                .catch(err => console.log('Erreur Service Worker', err));
+        }
+    </script>
 </body>
 </html>

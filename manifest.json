@@ -1,11 +1,14 @@
 {
-  "name": "LoreVault Media Catalog",
+  "name": "LoreVault - Catalogue Média Privé",
   "short_name": "LoreVault",
-  "description": "Mon catalogue personnel de médias",
-  "start_url": "index.html",
+  "description": "Catalogue personnel de médias stocké localement. Aucune donnée envoyée sur Internet.",
+  "lang": "fr-FR",
+  "start_url": "/LoreVault/index.html",
   "display": "standalone",
+  "scope": "/LoreVault/",
   "background_color": "#1a1a1a",
   "theme_color": "#6666ff",
+  "orientation": "portrait-primary",
   "icons": [
     {
       "src": "lorevault.png",
@@ -16,7 +19,36 @@
     {
       "src": "lorevault.png",
       "sizes": "512x512",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any maskable"
     }
-  ]
+  ],
+  "categories": ["productivity", "entertainment"],
+  "shortcuts": [
+    {
+      "name": "Ajouter un média",
+      "short_name": "Ajouter",
+      "description": "Ajouter un nouveau média à votre collection",
+      "url": "/LoreVault/index.html#add-media",
+      "icons": [
+        {
+          "src": "lorevault.png",
+          "sizes": "192x192"
+        }
+      ]
+    },
+    {
+      "name": "Voir les statistiques",
+      "short_name": "Stats",
+      "description": "Consulter vos statistiques et réalisations",
+      "url": "/LoreVault/index.html#stats",
+      "icons": [
+        {
+          "src": "lorevault.png",
+          "sizes": "192x192"
+        }
+      ]
+    }
+  ],
+  "prefer_related_applications": false
 }

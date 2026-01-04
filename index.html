@@ -4,8 +4,17 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>LoreVault</title>
+    
+    <!-- Ressources -->
+        <meta name="theme-color" content="#6666ff">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+
     <link rel="manifest" href="data:application/json;base64,eyJuYW1lIjoiTG9yZVZhdWx0Iiwic2hvcnRfbmFtZSI6IkxvcmVWYXVsdCIsImRlc2NyaXB0aW9uIjoiQ2F0YWxvZ3VlIHBlcnNvbm5lbCBkZSBtw6lkaWFzIiwidGhlbWVfY29sb3IiOiIjNjY2NmZmIiwiYmFja2dyb3VuZF9jb2xvciI6IiMxYTFhMWEiLCJkaXNwbGF5Ijoic3RhbmRhbG9uZSIsInN0YXJ0X3VybCI6Ii8iLCJpY29ucyI6W3sic3JjIjoiZGF0YTppbWFnZS9zdmcreG1sO2Jhc2U2NCxQSE4yWnlCcGJtTnpQU0pvZEhSd09pOHZkM2QzTG5jekxtOXlaeTh5TURBd0wzTjJaeUlnZG1sbGQwSnZlRDBpTUNBd0lESTBJREkwSWo0OGNHRjBhQ0JtYVd4c1BTSWpOalkyWm1ZaUlHUTlJazB4TWlBMlkyUXRMakF4TFRrdVlEVXVNVFEyWVRndU9EQXpJRGd1T0RBeklEQXdNQ0EwTGk0eE5EWZRSR05zY21GMmRpQTNJRE1rZUZUVGRsNEhtRT1kIn0seyJzcmMiOiJkYXRhOmltYWdlL3N2Zyt4bWw7YmFzZTY0LFBITjJaeUJwYm1OelBTSm9kSFJ3T2k4dmQzZDNMblF6TG05eVp5OHlNREF3TDNOMlp5SWdkbWxsZDFKdmVEMGlNQ0F3SURFeUlERXlJajQ4Y0dGMGFDQm1hV3hzUFNJak5qWTJabVlpSUdROUlrMHhNaUEyWTJRdExqQXhMVGt1WVRVdU1UUTJhVGd1T0RBeklEZ3VPREF6SURBd01DQTBMZ014TkdaaVVuSmpaU0ExTGpJeUlEVXVNaTR4TkdaaVVuWmJUVGxqTUNnfSJdXX0=">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+    <link rel="apple-touch-icon" href="lorevault.png">
+     <link rel="manifest" href="manifest.json">
     <style>
         * {
             margin: 0;
@@ -1804,48 +1813,6 @@
             }
         }
 
-        // Service Worker pour PWA
-        if ('serviceWorker' in navigator) {
-            const swCode = `
-                const CACHE_NAME = 'loreVault-v1';
-                const urlsToCache = [
-                    '/',
-                    'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css'
-                ];
-
-                self.addEventListener('install', (event) => {
-                    event.waitUntil(
-                        caches.open(CACHE_NAME)
-                            .then((cache) => cache.addAll(urlsToCache))
-                    );
-                });
-
-                self.addEventListener('fetch', (event) => {
-                    event.respondWith(
-                        caches.match(event.request)
-                            .then((response) => {
-                                return response || fetch(event.request);
-                            }
-                        )
-                    );
-                });
-            `;
-
-            const blob = new Blob([swCode], { type: 'application/javascript' });
-            const swUrl = URL.createObjectURL(blob);
-            
-            navigator.serviceWorker.register(swUrl)
-                .then((registration) => {
-                    console.log('Service Worker enregistré avec succès:', registration.scope);
-                })
-                .catch((error) => {
-                    console.log('Échec de l\'enregistrement du Service Worker:', error);
-                });
-        }
-
-        // Initialisation de l'application
-        let loreVault;
-        
         document.addEventListener('DOMContentLoaded', () => {
             loreVault = new LoreVault();
             

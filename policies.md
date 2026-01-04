@@ -33,9 +33,22 @@ LoreVault est une application de catalogue personnel de médias développée par
 ❌ **Aucun partage de données** : Vos données ne sont jamais partagées avec des tiers  
 ❌ **Aucun accès à vos fichiers** : Nous n'accédons qu'aux images que vous choisissez d'importer  
 
+## Compatibilité et Plateformes
+
+### Plateforme Principale :
+**LoreVault a été conçu et optimisé spécifiquement pour les appareils Android.** L'application utilise des technologies et des interfaces pensées pour l'écosystème Android.
+
+### Limitations iOS/Apple :
+⚠️ **Important** : Bien que l'application puisse techniquement fonctionner sur iOS/Apple, elle n'a pas été développée ni testée pour ces plateformes. Des problèmes de responsivité, de compatibilité et d'affichage peuvent survenir sur :
+- iPhone et iPad
+- Safari (navigateur iOS)
+- Appareils Apple en général
+
+**Nous ne garantissons pas une expérience optimale sur les appareils iOS/Apple.**
+
 ## Permissions Requises
 
-### Sur Android/iOS :
+### Sur Android :
 - **Stockage** : Pour sauvegarder vos données localement
 - **Caméra/Photos** (optionnel) : Uniquement si vous souhaitez ajouter des images à vos médias
 - **Internet** (optionnel) : Uniquement pour charger les icônes Font Awesome depuis CDN
@@ -97,7 +110,7 @@ Nous nous réservons le droit de modifier cette politique de confidentialité. L
 Pour toute question concernant cette politique de confidentialité :
 
 **Développeur** : Luberisse Karl Brad (Karlito Dev)  
-**Email** : karlito2best@gmail.com 
+**Email** : karlito2best@gmail.com  
 **Téléphone** : +1 (849) 339-3248  
 
 ## Conformité
@@ -106,6 +119,7 @@ Cette application est conçue pour être conforme :
 - **RGPD** (Règlement Général sur la Protection des Données)
 - **CCPA** (California Consumer Privacy Act)
 - **Règles Google Play Store**
+- **Règles Apple App Store**
 
 ## Résumé
 

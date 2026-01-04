@@ -1,0 +1,1075 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>LoreVault</title>
+    
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#6666ff">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <link rel="apple-touch-icon" href="lorevault.png">
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body data-theme="dark">
+    <div class="overlay" id="overlay"></div>
+    
+    <header class="header">
+        <button class="hamburger" id="hamburger"><i class="fas fa-bars"></i></button>
+        <div class="logo"><i class="fas fa-archive"></i> LoreVault</div>
+        <div class="search-bar">
+            <input type="text" class="search-input" id="searchInput" placeholder="Rechercher...">
+            <button class="voice-search" id="voiceSearch"><i class="fas fa-microphone"></i></button>
+            <button class="focus-mode" id="focusMode"><i class="fas fa-eye"></i></button>
+        </div>
+    </header>
+
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-section">
+            <div class="sidebar-title"><i class="fas fa-palette"></i> Thèmes</div>
+            <div class="theme-grid">
+                <button class="theme-btn" data-theme="light">Light</button>
+                <button class="theme-btn active" data-theme="dark">Dark</button>
+                <button class="theme-btn" data-theme="neon">Neon</button>
+                <button class="theme-btn" data-theme="glassmorphism">Glass</button>
+            </div>
+        </div>
+        <div class="sidebar-section">
+            <div class="sidebar-title"><i class="fas fa-user"></i> Profil</div>
+            <input type="text" id="nickname" class="side-input" placeholder="Surnom">
+        </div>
+        <div class="sidebar-section">
+             <button class="theme-btn" id="exportBtn" style="width:100%"><i class="fas fa-download"></i> Exporter</button>
+        </div>
+    </aside>
+
+    <main class="main">
+        <section class="stats-section" id="statsSection">
+            <div class="stat-card"><div class="stat-number" id="totalItems">0</div><div class="stat-label">Total</div></div>
+            <div class="stat-card"><div class="stat-number" id="watchedItems">0</div><div class="stat-label">Vus</div></div>
+            <div class="stat-card"><div class="stat-number" id="favoriteItems">0</div><div class="stat-label">Favoris</div></div>
+        </section>
+
+        <nav class="categories-container">
+            <div class="categories">
+                <button class="category-btn active" data-category="all">Tout</button>
+                <button class="category-btn" data-category="anime">Anime</button>
+                <button class="category-btn" data-category="manga">Manga</button>
+                <button class="category-btn" data-category="serie">Série</button>
+                <button class="category-btn" data-category="film">Film</button>
+                <button class="category-btn" data-category="favorites">Favoris</button>
+            </div>
+        </nav>
+
+        <section class="controls">
+            <select class="sort-btn" id="sortSelect">
+                <option value="date">Date</option>
+                <option value="title">A-Z</option>
+                <option value="rating">Note</option>
+            </select>
+            <button class="add-btn" id="addBtn"><i class="fas fa-plus"></i> Ajouter</button>
+        </section>
+
+        <div class="media-grid" id="mediaGrid"></div>
+    </main>
+
+    <script>
+        // Logique simplifiée & Enregistrement du Service Worker
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('./sw.js')
+                    .then(reg => console.log('LoreVault PWA Ready'))
+                    .catch(err => console.log('SW Error:', err));
+            });
+        }
+class LoreVault {
+            constructor() {
+                this.mediaData = [];
+                this.currentFilter = 'all';
+                this.sortBy = 'date';
+                this.sortOrder = 'desc';
+                this.currentTheme = 'dark';
+                this.badges = [];
+                this.customStatuses = [];
+                this.focusMode = false;
+                
+                this.init();
+            }
+
+            init() {
+                this.loadData();
+                this.setupEventListeners();
+                this.updateStats();
+                this.renderGrid();
+                this.checkBadges();
+                this.setupThemeScheduler();
+            }
+
+            setupEventListeners() {
+                // Hamburger menu
+                document.getElementById('hamburger').addEventListener('click', () => {
+                    const sidebar = document.getElementById('sidebar');
+                    const overlay = document.getElementById('overlay');
+                    sidebar.classList.toggle('open');
+                    overlay.classList.toggle('show');
+                });
+
+                // Overlay
+                document.getElementById('overlay').addEventListener('click', () => {
+                    this.closeSidebar();
+                });
+
+                // Theme buttons
+                document.querySelectorAll('.theme-btn').forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        const theme = btn.dataset.theme;
+                        if (theme) {
+                            this.setTheme(theme);
+                        }
+                    });
+                });
+
+                // Settings
+                document.getElementById('settingsToggle').addEventListener('click', () => {
+                    const menu = document.getElementById('settingsMenu');
+                    menu.classList.toggle('show');
+                });
+
+                // Category buttons
+                document.querySelectorAll('.category-btn').forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        this.setFilter(btn.dataset.category);
+                        document.querySelectorAll('.category-btn').forEach(b => b.classList.remove('active'));
+                        btn.classList.add('active');
+                    });
+                });
+
+                // Sort controls
+                document.getElementById('sortSelect').addEventListener('change', (e) => {
+                    this.sortBy = e.target.value;
+                    this.renderGrid();
+                });
+
+                document.getElementById('sortOrder').addEventListener('click', () => {
+                    this.sortOrder = this.sortOrder === 'asc' ? 'desc' : 'asc';
+                    const icon = document.querySelector('#sortOrder i');
+                    icon.className = this.sortOrder === 'asc' ? 'fas fa-sort-amount-up' : 'fas fa-sort-amount-down';
+                    this.renderGrid();
+                });
+
+                // Add button
+                document.getElementById('addBtn').addEventListener('click', () => {
+                    this.openMediaModal();
+                });
+
+                // Search
+                document.getElementById('searchInput').addEventListener('input', (e) => {
+                    this.searchItems(e.target.value);
+                });
+
+                // Voice search
+                document.getElementById('voiceSearch').addEventListener('click', () => {
+                    this.startVoiceSearch();
+                });
+
+                // Focus mode
+                document.getElementById('focusMode').addEventListener('click', () => {
+                    this.toggleFocusMode();
+                });
+
+                // Modal events
+                this.setupModalEvents();
+
+                // Settings menu events
+                this.setupSettingsEvents();
+
+                // Rating stars
+                this.setupRatingStars();
+
+                // Form submission
+                document.getElementById('mediaForm').addEventListener('submit', (e) => {
+                    e.preventDefault();
+                    this.saveMedia();
+                });
+
+                // Nickname and password
+                document.getElementById('nickname').addEventListener('input', (e) => {
+                    localStorage.setItem('loreVault_nickname', e.target.value);
+                });
+
+                document.getElementById('password').addEventListener('input', (e) => {
+                    localStorage.setItem('loreVault_password', e.target.value);
+                });
+            }
+
+            setupModalEvents() {
+                const modal = document.getElementById('mediaModal');
+                const confirmModal = document.getElementById('confirmModal');
+                
+                document.getElementById('closeModal').addEventListener('click', () => {
+                    modal.classList.remove('show');
+                });
+
+                document.getElementById('cancelBtn').addEventListener('click', () => {
+                    modal.classList.remove('show');
+                });
+
+                document.getElementById('closeConfirm').addEventListener('click', () => {
+                    confirmModal.classList.remove('show');
+                });
+
+                document.getElementById('confirmCancel').addEventListener('click', () => {
+                    confirmModal.classList.remove('show');
+                });
+
+                // Close modal when clicking outside
+                modal.addEventListener('click', (e) => {
+                    if (e.target === modal) {
+                        modal.classList.remove('show');
+                    }
+                });
+
+                confirmModal.addEventListener('click', (e) => {
+                    if (e.target === confirmModal) {
+                        confirmModal.classList.remove('show');
+                    }
+                });
+            }
+
+            setupSettingsEvents() {
+                document.getElementById('clearAllBtn').addEventListener('click', () => {
+                    this.confirmAction('Êtes-vous sûr de vouloir supprimer tous les catalogues ?', () => {
+                        const password = document.getElementById('password').value;
+                        const storedPassword = localStorage.getItem('loreVault_password');
+                        
+                        if (!storedPassword || password === storedPassword) {
+                            this.mediaData = [];
+                            this.saveData();
+                            this.updateStats();
+                            this.renderGrid();
+                            this.showNotification('Tous les catalogues ont été supprimés', 'success');
+                        } else {
+                            this.showNotification('Mot de passe incorrect', 'error');
+                        }
+                    });
+                });
+
+                document.getElementById('exportBtn').addEventListener('click', () => {
+                    const password = document.getElementById('password').value;
+                    const storedPassword = localStorage.getItem('loreVault_password');
+                    
+                    if (!storedPassword || password === storedPassword) {
+                        this.exportData();
+                    } else {
+                        this.showNotification('Mot de passe incorrect', 'error');
+                    }
+                });
+
+                document.getElementById('importBtn').addEventListener('click', () => {
+                    document.getElementById('importFile').click();
+                });
+
+                document.getElementById('addImageBtn').addEventListener('click', () => {
+                    document.getElementById('imageFile').click();
+                });
+
+                document.getElementById('importFile').addEventListener('change', (e) => {
+                    this.importData(e.target.files[0]);
+                });
+
+                document.getElementById('imageFile').addEventListener('change', (e) => {
+                    this.handleImageUpload(e.target.files[0]);
+                });
+            }
+
+            setupRatingStars() {
+                const stars = document.querySelectorAll('.star');
+                let currentRating = 0;
+
+                stars.forEach((star, index) => {
+                    star.addEventListener('click', () => {
+                        currentRating = index + 1;
+                        document.getElementById('mediaRating').value = currentRating;
+                        this.updateStarDisplay(currentRating);
+                    });
+
+                    star.addEventListener('mouseover', () => {
+                        this.updateStarDisplay(index + 1);
+                    });
+                });
+
+                document.getElementById('ratingStars').addEventListener('mouseleave', () => {
+                    this.updateStarDisplay(currentRating);
+                });
+            }
+
+            updateStarDisplay(rating) {
+                const stars = document.querySelectorAll('.star');
+                stars.forEach((star, index) => {
+                    if (index < rating) {
+                        star.style.color = '#ffd700';
+                    } else {
+                        star.style.color = '#ccc';
+                    }
+                });
+            }
+
+            setTheme(theme) {
+                this.currentTheme = theme;
+                document.body.setAttribute('data-theme', theme);
+                
+                // Update active theme button
+                document.querySelectorAll('.theme-btn').forEach(btn => {
+                    btn.classList.remove('active');
+                    if (btn.dataset.theme === theme) {
+                        btn.classList.add('active');
+                    }
+                });
+
+                localStorage.setItem('loreVault_theme', theme);
+            }
+
+            setupThemeScheduler() {
+                const hour = new Date().getHours();
+                if (hour >= 6 && hour < 18) {
+                    // Day time
+                    if (this.currentTheme === 'dark') {
+                        this.setTheme('light');
+                    }
+                } else {
+                    // Night time
+                    if (this.currentTheme === 'light') {
+                        this.setTheme('dark');
+                    }
+                }
+
+                // Check every hour
+                setInterval(() => {
+                    this.setupThemeScheduler();
+                }, 3600000);
+            }
+
+            closeSidebar() {
+                document.getElementById('sidebar').classList.remove('open');
+                document.getElementById('overlay').classList.remove('show');
+                document.getElementById('settingsMenu').classList.remove('show');
+            }
+
+            setFilter(category) {
+                this.currentFilter = category;
+                this.renderGrid();
+            }
+
+            searchItems(query) {
+                const filtered = this.mediaData.filter(item => 
+                    item.title.toLowerCase().includes(query.toLowerCase()) ||
+                    item.category.toLowerCase().includes(query.toLowerCase()) ||
+                    item.status.toLowerCase().includes(query.toLowerCase())
+                );
+                this.renderGrid(filtered);
+            }
+
+            startVoiceSearch() {
+                if ('webkitSpeechRecognition' in window) {
+                    const recognition = new webkitSpeechRecognition();
+                    recognition.lang = 'fr-FR';
+                    recognition.continuous = false;
+                    recognition.interimResults = false;
+
+                    recognition.onstart = () => {
+                        document.getElementById('voiceSearch').style.color = '#ff4444';
+                    };
+
+                    recognition.onresult = (event) => {
+                        const result = event.results[0][0].transcript;
+                        document.getElementById('searchInput').value = result;
+                        this.searchItems(result);
+                    };
+
+                    recognition.onend = () => {
+                        document.getElementById('voiceSearch').style.color = 'white';
+                    };
+
+                    recognition.start();
+                } else {
+                    this.showNotification('La recherche vocale n\'est pas supportée par votre navigateur', 'error');
+                }
+            }
+
+            toggleFocusMode() {
+                this.focusMode = !this.focusMode;
+                const button = document.getElementById('focusMode');
+                
+                if (this.focusMode) {
+                    button.style.background = '#ff4444';
+                    this.showRandomItem();
+                } else {
+                    button.style.background = 'var(--primary-color)';
+                    this.renderGrid();
+                }
+            }
+
+            showRandomItem() {
+                if (this.mediaData.length === 0) {
+                    this.showNotification('Aucun média disponible', 'warning');
+                    return;
+                }
+
+                const randomItem = this.mediaData[Math.floor(Math.random() * this.mediaData.length)];
+                const grid = document.getElementById('mediaGrid');
+                
+                grid.innerHTML = `
+                    <div class="focus-item">
+                        <div class="focus-image">
+                            ${randomItem.image ? 
+                                `<img src="${randomItem.image}" alt="${randomItem.title}">` : 
+                                this.getCategoryIcon(randomItem.category)
+                            }
+                        </div>
+                        <h2>${randomItem.title}</h2>
+                        <p>Catégorie: ${randomItem.category}</p>
+                        <p>Statut: ${randomItem.status}</p>
+                        ${randomItem.rating > 0 ? `<div class="rating-stars">${'★'.repeat(randomItem.rating)}${'☆'.repeat(5-randomItem.rating)}</div>` : ''}
+                        ${randomItem.notes ? `<p>${randomItem.notes}</p>` : ''}
+                        <button class="btn-primary" onclick="loreVault.toggleFocusMode()" style="margin-top: 1rem;">
+                            <i class="fas fa-times"></i> Fermer Focus
+                        </button>
+                    </div>
+                `;
+            }
+
+            openMediaModal(item = null) {
+                const modal = document.getElementById('mediaModal');
+                const title = document.getElementById('modalTitle');
+                
+                if (item) {
+                    title.textContent = 'Éditer un média';
+                    this.fillModalWithData(item);
+                } else {
+                    title.textContent = 'Ajouter un média';
+                    this.clearModalData();
+                }
+                
+                modal.classList.add('show');
+            }
+
+            fillModalWithData(item) {
+                document.getElementById('editId').value = item.id;
+                document.getElementById('mediaTitle').value = item.title;
+                document.getElementById('mediaCategory').value = item.category;
+                document.getElementById('mediaStatus').value = item.status;
+                document.getElementById('mediaRating').value = item.rating || 0;
+                document.getElementById('mediaNotes').value = item.notes || '';
+                document.getElementById('reminderDate').value = item.reminderDate || '';
+                
+                this.updateStarDisplay(item.rating || 0);
+            }
+
+            clearModalData() {
+                document.getElementById('editId').value = '';
+                document.getElementById('mediaTitle').value = '';
+                document.getElementById('mediaCategory').value = 'anime';
+                document.getElementById('mediaStatus').value = 'Pas encore';
+                document.getElementById('mediaRating').value = 0;
+                document.getElementById('mediaNotes').value = '';
+                document.getElementById('reminderDate').value = '';
+                document.getElementById('mediaImage').value = '';
+                
+                this.updateStarDisplay(0);
+            }
+
+            saveMedia() {
+                const id = document.getElementById('editId').value;
+                const title = document.getElementById('mediaTitle').value;
+                const category = document.getElementById('mediaCategory').value;
+                const status = document.getElementById('mediaStatus').value;
+                const rating = parseInt(document.getElementById('mediaRating').value) || 0;
+                const notes = document.getElementById('mediaNotes').value;
+                const reminderDate = document.getElementById('reminderDate').value;
+                const imageFile = document.getElementById('mediaImage').files[0];
+
+                const mediaItem = {
+                    id: id || Date.now().toString(),
+                    title,
+                    category,
+                    status,
+                    rating,
+                    notes,
+                    reminderDate,
+                    dateAdded: id ? this.findItemById(id)?.dateAdded || new Date().toISOString() : new Date().toISOString(),
+                    favorite: id ? this.findItemById(id)?.favorite || false : false
+                };
+
+                if (imageFile) {
+                    const reader = new FileReader();
+                    reader.onload = (e) => {
+                        mediaItem.image = e.target.result;
+                        this.saveMediaItem(mediaItem, id);
+                    };
+                    reader.readAsDataURL(imageFile);
+                } else {
+                    if (id) {
+                        const existingItem = this.findItemById(id);
+                        if (existingItem) {
+                            mediaItem.image = existingItem.image;
+                        }
+                    }
+                    this.saveMediaItem(mediaItem, id);
+                }
+            }
+
+            saveMediaItem(mediaItem, editId) {
+                if (editId) {
+                    const index = this.mediaData.findIndex(item => item.id === editId);
+                    if (index !== -1) {
+                        this.mediaData[index] = mediaItem;
+                    }
+                } else {
+                    this.mediaData.push(mediaItem);
+                }
+
+                this.saveData();
+                this.updateStats();
+                this.renderGrid();
+                this.checkBadges();
+                document.getElementById('mediaModal').classList.remove('show');
+                this.showNotification('Média sauvegardé avec succès', 'success');
+
+                // Check for reminder
+                if (mediaItem.reminderDate) {
+                    this.scheduleReminder(mediaItem);
+                }
+            }
+
+            findItemById(id) {
+                return this.mediaData.find(item => item.id === id);
+            }
+
+            deleteMedia(id) {
+                this.confirmAction('Êtes-vous sûr de vouloir supprimer ce média ?', () => {
+                    this.mediaData = this.mediaData.filter(item => item.id !== id);
+                    this.saveData();
+                    this.updateStats();
+                    this.renderGrid();
+                    this.showNotification('Média supprimé', 'success');
+                });
+            }
+
+            toggleFavorite(id) {
+                const item = this.findItemById(id);
+                if (item) {
+                    item.favorite = !item.favorite;
+                    this.saveData();
+                    this.updateStats();
+                    this.renderGrid();
+                    this.showNotification(`${item.favorite ? 'Ajouté aux' : 'Retiré des'} favoris`, 'success');
+                }
+            }
+
+            updateStats() {
+                const total = this.mediaData.length;
+                const watched = this.mediaData.filter(item => item.status === 'Déjà regardé').length;
+                const toWatch = this.mediaData.filter(item => item.status === 'À regarder').length;
+                const favorites = this.mediaData.filter(item => item.favorite).length;
+
+                document.getElementById('totalItems').textContent = total;
+                document.getElementById('watchedItems').textContent = watched;
+                document.getElementById('toWatchItems').textContent = toWatch;
+                document.getElementById('favoriteItems').textContent = favorites;
+            }
+
+            renderGrid(items = null) {
+                if (this.focusMode) return;
+
+                let dataToRender = items || this.getFilteredData();
+                dataToRender = this.sortData(dataToRender);
+
+                const grid = document.getElementById('mediaGrid');
+                
+                if (dataToRender.length === 0) {
+                    grid.innerHTML = `
+                        <div style="grid-column: 1/-1; text-align: center; padding: 3rem; color: var(--text-secondary);">
+                            <i class="fas fa-inbox" style="font-size: 4rem; margin-bottom: 1rem;"></i>
+                            <p>Aucun média trouvé</p>
+                        </div>
+                    `;
+                    return;
+                }
+
+                grid.innerHTML = dataToRender.map(item => this.createMediaCard(item)).join('');
+            }
+
+            getFilteredData() {
+                if (this.currentFilter === 'all') {
+                    return this.mediaData;
+                } else if (this.currentFilter === 'favorites') {
+                    return this.mediaData.filter(item => item.favorite);
+                } else {
+                    return this.mediaData.filter(item => item.category === this.currentFilter);
+                }
+            }
+
+            sortData(data) {
+                return data.sort((a, b) => {
+                    let aValue, bValue;
+                    
+                    switch (this.sortBy) {
+                        case 'title':
+                            aValue = a.title.toLowerCase();
+                            bValue = b.title.toLowerCase();
+                            break;
+                        case 'status':
+                            aValue = a.status;
+                            bValue = b.status;
+                            break;
+                        case 'rating':
+                            aValue = a.rating || 0;
+                            bValue = b.rating || 0;
+                            break;
+                        case 'date':
+                        default:
+                            aValue = new Date(a.dateAdded);
+                            bValue = new Date(b.dateAdded);
+                            break;
+                    }
+
+                    if (this.sortOrder === 'asc') {
+                        return aValue > bValue ? 1 : -1;
+                    } else {
+                        return aValue < bValue ? 1 : -1;
+                    }
+                });
+            }
+
+            createMediaCard(item) {
+                const statusClass = this.getStatusClass(item.status);
+                const categoryIcon = this.getCategoryIcon(item.category);
+                
+                return `
+                    <div class="media-card" onclick="loreVault.openMediaModal(loreVault.findItemById('${item.id}'))">
+                        <div class="media-image">
+                            ${item.image ? 
+                                `<img src="${item.image}" alt="${item.title}">` : 
+                                categoryIcon
+                            }
+                            <button class="favorite-btn ${item.favorite ? 'favorited' : ''}" onclick="event.stopPropagation(); loreVault.toggleFavorite('${item.id}')">
+                                <i class="fas fa-heart"></i>
+                            </button>
+                        </div>
+                        <div class="media-info">
+                            <div class="media-title" title="${item.title}">${item.title}</div>
+                            <span class="media-status ${statusClass}">${item.status}</span>
+                            ${item.rating > 0 ? `
+                                <div class="media-rating">
+                                    ${'★'.repeat(item.rating)}${'☆'.repeat(5-item.rating)}
+                                </div>
+                            ` : ''}
+                            <div style="margin-top: 0.5rem; display: flex; gap: 0.5rem;">
+                                <button onclick="event.stopPropagation(); loreVault.openMediaModal(loreVault.findItemById('${item.id}'))" 
+                                        style="background: var(--primary-color); border: none; color: white; padding: 0.25rem 0.5rem; border-radius: 4px; cursor: pointer;">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <button onclick="event.stopPropagation(); loreVault.deleteMedia('${item.id}')" 
+                                        style="background: var(--danger-color); border: none; color: white; padding: 0.25rem 0.5rem; border-radius: 4px; cursor: pointer;">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+
+            getStatusClass(status) {
+                switch (status) {
+                    case 'Déjà regardé': return 'status-watched';
+                    case 'Pas encore': return 'status-not-yet';
+                    case 'À regarder': return 'status-to-watch';
+                    default: return 'status-to-watch';
+                }
+            }
+
+            getCategoryIcon(category) {
+                const icons = {
+                    anime: '<i class="fas fa-play-circle"></i>',
+                    manga: '<i class="fas fa-book"></i>',
+                    webtoon: '<i class="fas fa-mobile-alt"></i>',
+                    serie: '<i class="fas fa-tv"></i>',
+                    film: '<i class="fas fa-film"></i>',
+                    'light-novel': '<i class="fas fa-feather"></i>',
+                    livre: '<i class="fas fa-book-open"></i>'
+                };
+                return icons[category] || '<i class="fas fa-question"></i>';
+            }
+
+            checkBadges() {
+                const newBadges = [];
+                
+                // Badge pour nombre total d'items
+                if (this.mediaData.length >= 10) newBadges.push({ name: 'Collectionneur', icon: 'fas fa-trophy', description: '10+ médias ajoutés' });
+                if (this.mediaData.length >= 50) newBadges.push({ name: 'Archiviste', icon: 'fas fa-medal', description: '50+ médias ajoutés' });
+                if (this.mediaData.length >= 100) newBadges.push({ name: 'Maître Collectionneur', icon: 'fas fa-crown', description: '100+ médias ajoutés' });
+
+                // Badge pour les différentes catégories
+                const categories = [...new Set(this.mediaData.map(item => item.category))];
+                if (categories.length >= 3) newBadges.push({ name: 'Diversité', icon: 'fas fa-palette', description: '3+ catégories différentes' });
+
+                // Badge pour les favoris
+                const favorites = this.mediaData.filter(item => item.favorite).length;
+                if (favorites >= 5) newBadges.push({ name: 'Passionné', icon: 'fas fa-heart', description: '5+ favoris' });
+
+                this.badges = newBadges;
+                this.renderBadges();
+            }
+
+            renderBadges() {
+                const badgesSection = document.getElementById('badgesSection');
+                
+                if (this.badges.length === 0) {
+                    badgesSection.innerHTML = '';
+                    return;
+                }
+
+                badgesSection.innerHTML = this.badges.map(badge => `
+                    <div class="badge" title="${badge.description}">
+                        <i class="${badge.icon}"></i>
+                        ${badge.name}
+                    </div>
+                `).join('');
+            }
+
+            scheduleReminder(item) {
+                const reminderTime = new Date(item.reminderDate).getTime();
+                const now = Date.now();
+                
+                if (reminderTime > now) {
+                    setTimeout(() => {
+                        this.showNotification(`Rappel: ${item.title}`, 'info');
+                    }, reminderTime - now);
+                }
+            }
+
+            confirmAction(message, callback) {
+                const modal = document.getElementById('confirmModal');
+                const messageEl = document.getElementById('confirmMessage');
+                const okBtn = document.getElementById('confirmOk');
+                
+                messageEl.textContent = message;
+                modal.classList.add('show');
+                
+                okBtn.onclick = () => {
+                    callback();
+                    modal.classList.remove('show');
+                };
+            }
+
+            exportData() {
+                const data = {
+                    mediaData: this.mediaData,
+                    badges: this.badges,
+                    customStatuses: this.customStatuses,
+                    settings: {
+                        theme: this.currentTheme,
+                        nickname: localStorage.getItem('loreVault_nickname') || ''
+                    }
+                };
+
+                const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `loreVault_export_${new Date().toISOString().split('T')[0]}.json`;
+                a.click();
+                URL.revokeObjectURL(url);
+                
+                this.showNotification('Données exportées avec succès', 'success');
+            }
+
+            importData(file) {
+                if (!file) return;
+
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    try {
+                        const data = JSON.parse(e.target.result);
+                        
+                        if (data.mediaData && Array.isArray(data.mediaData)) {
+                            this.mediaData = data.mediaData;
+                            
+                            if (data.badges) this.badges = data.badges;
+                            if (data.customStatuses) this.customStatuses = data.customStatuses;
+                            if (data.settings) {
+                                if (data.settings.theme) this.setTheme(data.settings.theme);
+                                if (data.settings.nickname) {
+                                    document.getElementById('nickname').value = data.settings.nickname;
+                                    localStorage.setItem('loreVault_nickname', data.settings.nickname);
+                                }
+                            }
+                            
+                            this.saveData();
+                            this.updateStats();
+                            this.renderGrid();
+                            this.checkBadges();
+                            this.showNotification('Données importées avec succès', 'success');
+                        } else {
+                            throw new Error('Format de fichier invalide');
+                        }
+                    } catch (error) {
+                        this.showNotification('Erreur lors de l\'import: fichier invalide', 'error');
+                    }
+                };
+                reader.readAsText(file);
+            }
+
+            handleImageUpload(file) {
+                if (!file) return;
+
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    // Pour l'instant, on stocke juste l'image
+                    // Dans une vraie application, on pourrait l'associer à un média spécifique
+                    this.showNotification('Image chargée (fonctionnalité en développement)', 'info');
+                };
+                reader.readAsDataURL(file);
+            }
+
+            showNotification(message, type = 'info') {
+                // Créer une notification toast
+                const notification = document.createElement('div');
+                notification.style.cssText = `
+                    position: fixed;
+                    top: 20px;
+                    right: 20px;
+                    padding: 1rem 1.5rem;
+                    border-radius: 8px;
+                    color: white;
+                    font-weight: 500;
+                    z-index: 10000;
+                    max-width: 300px;
+                    opacity: 0;
+                    transform: translateX(100%);
+                    transition: all 0.3s ease;
+                `;
+
+                // Couleurs selon le type
+                switch (type) {
+                    case 'success':
+                        notification.style.background = '#4CAF50';
+                        break;
+                    case 'error':
+                        notification.style.background = '#f44336';
+                        break;
+                    case 'warning':
+                        notification.style.background = '#FF9800';
+                        break;
+                    default:
+                        notification.style.background = '#2196F3';
+                }
+
+                notification.textContent = message;
+                document.body.appendChild(notification);
+
+                // Animation d'entrée
+                setTimeout(() => {
+                    notification.style.opacity = '1';
+                    notification.style.transform = 'translateX(0)';
+                }, 100);
+
+                // Suppression automatique
+                setTimeout(() => {
+                    notification.style.opacity = '0';
+                    notification.style.transform = 'translateX(100%)';
+                    setTimeout(() => {
+                        document.body.removeChild(notification);
+                    }, 300);
+                }, 3000);
+            }
+
+            saveData() {
+                try {
+                    localStorage.setItem('loreVault_data', JSON.stringify(this.mediaData));
+                    localStorage.setItem('loreVault_badges', JSON.stringify(this.badges));
+                    localStorage.setItem('loreVault_customStatuses', JSON.stringify(this.customStatuses));
+                } catch (error) {
+                    console.error('Erreur lors de la sauvegarde:', error);
+                    this.showNotification('Erreur lors de la sauvegarde', 'error');
+                }
+            }
+
+            loadData() {
+                try {
+                    // Charger les données principales
+                    const data = localStorage.getItem('loreVault_data');
+                    if (data) {
+                        this.mediaData = JSON.parse(data);
+                    }
+
+                    // Charger les badges
+                    const badges = localStorage.getItem('loreVault_badges');
+                    if (badges) {
+                        this.badges = JSON.parse(badges);
+                    }
+
+                    // Charger les statuts personnalisés
+                    const customStatuses = localStorage.getItem('loreVault_customStatuses');
+                    if (customStatuses) {
+                        this.customStatuses = JSON.parse(customStatuses);
+                    }
+
+                    // Charger le thème
+                    const theme = localStorage.getItem('loreVault_theme');
+                    if (theme) {
+                        this.setTheme(theme);
+                    }
+
+                    // Charger le surnom et mot de passe
+                    const nickname = localStorage.getItem('loreVault_nickname');
+                    const password = localStorage.getItem('loreVault_password');
+                    
+                    if (nickname) {
+                        document.getElementById('nickname').value = nickname;
+                    }
+                    if (password) {
+                        document.getElementById('password').value = password;
+                    }
+
+                } catch (error) {
+                    console.error('Erreur lors du chargement:', error);
+                    this.showNotification('Erreur lors du chargement des données', 'error');
+                }
+            }
+        }
+
+        
+        document.addEventListener('DOMContentLoaded', () => {
+            loreVault = new LoreVault();
+            
+            // Gestion des gestes tactiles pour mobile
+            if ('ontouchstart' in window) {
+                let touchStartX, touchStartY, touchEndX, touchEndY;
+                
+                document.addEventListener('touchstart', (e) => {
+                    touchStartX = e.changedTouches[0].screenX;
+                    touchStartY = e.changedTouches[0].screenY;
+                });
+                
+                document.addEventListener('touchend', (e) => {
+                    touchEndX = e.changedTouches[0].screenX;
+                    touchEndY = e.changedTouches[0].screenY;
+                    handleSwipe();
+                });
+                
+                function handleSwipe() {
+                    const deltaX = touchEndX - touchStartX;
+                    const deltaY = touchEndY - touchStartY;
+                    
+                    // Swipe horizontal pour ouvrir/fermer le menu
+                    if (Math.abs(deltaX) > Math.abs(deltaY) && Math.abs(deltaX) > 50) {
+                        if (deltaX > 0 && touchStartX < 50) {
+                            // Swipe vers la droite depuis le bord gauche
+                            document.getElementById('sidebar').classList.add('open');
+                            document.getElementById('overlay').classList.add('show');
+                        } else if (deltaX < 0 && document.getElementById('sidebar').classList.contains('open')) {
+                            // Swipe vers la gauche quand le menu est ouvert
+                            loreVault.closeSidebar();
+                        }
+                    }
+                }
+
+                // Long press pour éditer sur mobile
+                let longPressTimer;
+                
+                document.addEventListener('touchstart', (e) => {
+                    if (e.target.closest('.media-card')) {
+                        longPressTimer = setTimeout(() => {
+                            const card = e.target.closest('.media-card');
+                            const id = card.onclick.toString().match(/'([^']+)'/)[1];
+                            loreVault.openMediaModal(loreVault.findItemById(id));
+                        }, 800);
+                    }
+                });
+                
+                document.addEventListener('touchend', () => {
+                    clearTimeout(longPressTimer);
+                });
+                
+                document.addEventListener('touchmove', () => {
+                    clearTimeout(longPressTimer);
+                });
+            }
+
+            // Raccourcis clavier
+            document.addEventListener('keydown', (e) => {
+                // Ctrl/Cmd + N pour ajouter un nouveau média
+                if ((e.ctrlKey || e.metaKey) && e.key === 'n') {
+                    e.preventDefault();
+                    loreVault.openMediaModal();
+                }
+                
+                // Escape pour fermer les modals
+                if (e.key === 'Escape') {
+                    document.getElementById('mediaModal').classList.remove('show');
+                    document.getElementById('confirmModal').classList.remove('show');
+                    loreVault.closeSidebar();
+                    if (loreVault.focusMode) {
+                        loreVault.toggleFocusMode();
+                    }
+                }
+                
+                // Ctrl/Cmd + F pour focus sur la recherche
+                if ((e.ctrlKey || e.metaKey) && e.key === 'f') {
+                    e.preventDefault();
+                    document.getElementById('searchInput').focus();
+                }
+                
+                // F pour mode focus
+                if (e.key === 'f' && !e.ctrlKey && !e.metaKey && document.activeElement.tagName !== 'INPUT' && document.activeElement.tagName !== 'TEXTAREA') {
+                    loreVault.toggleFocusMode();
+                }
+            });
+
+            // Notification de bienvenue
+            setTimeout(() => {
+                const nickname = localStorage.getItem('loreVault_nickname');
+                const welcomeMessage = nickname ? 
+                    `Bienvenue ${nickname} dans LoreVault !` : 
+                    'Bienvenue dans LoreVault !';
+                loreVault.showNotification(welcomeMessage, 'info');
+            }, 1000);
+
+            // Vérifier les rappels au chargement
+            loreVault.mediaData.forEach(item => {
+                if (item.reminderDate) {
+                    const reminderTime = new Date(item.reminderDate).getTime();
+                    const now = Date.now();
+                    
+                    if (reminderTime <= now && reminderTime > now - 86400000) { // 24h de marge
+                        loreVault.showNotification(`Rappel: ${item.title}`, 'warning');
+                    }
+                }
+            });
+        });
+
+        // Gestion de l'état offline/online
+        window.addEventListener('online', () => {
+            document.body.style.borderTop = '3px solid #4CAF50';
+            setTimeout(() => {
+                document.body.style.borderTop = 'none';
+            }, 2000);
+        });
+
+        window.addEventListener('offline', () => {
+            document.body.style.borderTop = '3px solid #FF9800';
+        });
+
+        // Auto-sauvegarde toutes les 30 secondes
+        setInterval(() => {
+            if (loreVault && loreVault.mediaData.length > 0) {
+                loreVault.saveData();
+            }
+        }, 30000);
+    </script>
+</body>
+</html>

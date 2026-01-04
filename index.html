@@ -1972,6 +1972,13 @@
                 loreVault.saveData();
             }
         }, 30000);
+        if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+        navigator.serviceWorker.register('./sw.js')
+            .then(reg => console.log('SW enregistré !'))
+            .catch(err => console.log('Erreur SW', err));
+    });
+}
     </script>
 </body>
 </html>

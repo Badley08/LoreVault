@@ -1,6 +1,6 @@
 # Politique de Confidentialité - LoreVault
 
-**Dernière mise à jour : 4 janvier 2026**
+**Dernière mise à jour : 5 janvier 2026**
 
 ## Introduction
 
@@ -31,7 +31,7 @@ LoreVault est une application de catalogue personnel de médias développée par
 ❌ **Aucune publicité** : L'application est 100% sans publicité  
 ❌ **Aucun compte requis** : Pas d'inscription, pas de connexion  
 ❌ **Aucun partage de données** : Vos données ne sont jamais partagées avec des tiers  
-❌ **Aucun accès à vos fichiers** : Nous n'accédons qu'aux images que vous choisissez d'importer  
+❌ **Aucun accès à vos fichiers** : Pas même aux images que vous choisissez d'importer  
 
 ## Compatibilité et Plateformes
 
@@ -58,14 +58,8 @@ LoreVault est une application de catalogue personnel de médias développée par
 ## Sécurité de Vos Données
 
 ### Protection locale :
-- **Mot de passe optionnel** : Vous pouvez protéger votre catalogue avec un mot de passe local
-- **Chiffrement appareil** : Vos données bénéficient du chiffrement de votre appareil
 - **Aucune transmission** : Vos données ne sont jamais envoyées sur Internet
 
-### Sauvegarde et Export :
-- **Export JSON** : Vous pouvez exporter vos données à tout moment
-- **Import JSON** : Vous pouvez importer vos données sauvegardées
-- **Contrôle total** : Vous êtes le seul propriétaire de vos données
 
 ## Données de Navigation
 
@@ -84,18 +78,13 @@ L'application n'utilise aucun service d'analyse. Aucune donnée de navigation n'
 ## Droits des Utilisateurs
 
 Vous avez un contrôle total sur vos données :
-
-✅ **Accès** : Accédez à toutes vos données via l'export JSON  
+ 
 ✅ **Modification** : Modifiez toutes vos entrées à tout moment  
-✅ **Suppression** : Supprimez vos données individuellement ou en totalité  
-✅ **Export** : Exportez vos données au format JSON  
-✅ **Portabilité** : Transférez vos données vers un autre appareil  
-
+✅ **Suppression** : Supprimez vos données quand vous voulez
 ## Suppression des Données
 
 Pour supprimer vos données :
 1. **Suppression individuelle** : Supprimez des entrées une par une
-2. **Suppression totale** : Utilisez l'option "Supprimer tout" dans les paramètres
 3. **Désinstallation** : La désinstallation de l'app supprime toutes les données locales
 
 ## Changements à cette Politique
@@ -119,7 +108,6 @@ Cette application est conçue pour être conforme :
 - **RGPD** (Règlement Général sur la Protection des Données)
 - **CCPA** (California Consumer Privacy Act)
 - **Règles Google Play Store**
-- **Règles Apple App Store**
 
 ## Résumé
 

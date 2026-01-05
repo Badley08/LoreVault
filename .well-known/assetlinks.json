@@ -3,7 +3,7 @@
     "relation": ["delegate_permission/common.handle_all_urls"],
     "target": {
       "namespace": "android_app",
-      "package_name": "io.github.badley08.lorevault",
+      "package_name": "com.karlito.lorevault",
       "sha256_cert_fingerprints": [
         "8E:9C:E7:D8:37:45:83:AD:F0:1A:9B:71:A0:80:D0:FC:06:E8:AD:13:14:9A:97:47:46:AC:52:78:71:42:92:73"
       ]

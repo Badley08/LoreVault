@@ -20,19 +20,19 @@
   "categories": ["productivity", "education", "writing"],
 
   "icons": [
-    {
-      "src": "/LoreVault/icons/lorevault-any.png",
-      "sizes": "512x512",
-      "type": "image/png",
-      "purpose": "any"
-    },
-    {
-      "src": "/LoreVault/icons/lorevault-maskable.png",
-      "sizes": "512x512",
-      "type": "image/png",
-      "purpose": "maskable"
-    }
-  ],
+  {
+    "src": "/icons/lorevault-any.png",
+    "sizes": "512x512",
+    "type": "image/png",
+    "purpose": "any"
+  },
+  {
+    "src": "/icons/lorevault-maskable.png",
+    "sizes": "512x512",
+    "type": "image/png",
+    "purpose": "maskable"
+  }
+],
 
   "iarc_rating_id": "e10+",
 
